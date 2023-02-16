@@ -1,12 +1,18 @@
-import requests
-import discord
+#!/usr/bin/env python3
 import asyncio
+import discord
+import os
+import requests
+from dotenv import load_dotenv
 
 intents = discord.Intents.all()
 client = discord.Client(intents=intents)
-channel_id = #channel ID goes here
 xkcd_url = 'http://xkcd.com/info.0.json'
 latest_comic_number = None
+
+load_dotenv()
+channel_id = int(os.getenv("XKCD_CHANNEL_ID"))
+bot_token = os.getenv("XKCD_TOKEN")
 
 async def check_xkcd():
     global latest_comic_number
@@ -17,7 +23,7 @@ async def check_xkcd():
             latest_comic_number = data['num']
         elif latest_comic_number < data['num']:
             latest_comic_number = data['num']
-            comic_url = f'https://xkcd.com/%7Bdata[%22num%22]%7D/'
+            comic_url = f'https://xkcd.com/{data["num"]}/'
             comic_image_url = data['img']
             channel = client.get_channel(channel_id)
             await channel.send(f'XKCD just uploaded a new comic! {comic_url}')
@@ -25,10 +31,8 @@ async def check_xkcd():
 @client.event
 async def on_ready():
     print(f'Logged in as {client.user.name}')
-    await check_xkcd()
     while True:
-        await asyncio.sleep(60606) # Check for new XKCD comic every 6 hours
         await check_xkcd()
-        print("test")
+        await asyncio.sleep(60606) # Check for new XKCD comic every 6 hours
 
-client.run('bot token goes here')
+client.run(bot_token)
